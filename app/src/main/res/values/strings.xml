@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="title_movie_detail">Movie Detail</string>
+    <string name="action_sort_by_popularity">Sort by popularity</string>
+    <string name="action_sort_by_highest_rated">Sort by highest rated</string>
+    <string name="action_refresh">Refresh</string>
+</resources>

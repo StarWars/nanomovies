@@ -101,6 +101,7 @@ public class MovieListFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
@@ -146,7 +147,17 @@ public class MovieListFragment extends Fragment {
 
         mRecyclerView.setAdapter(new MoviesAdapter(new MovieModel[0], null)); // Dummy adapter while waiting for MoviesDB API data
 
-        downloadMoviesData(SORT_ORDER_POPULARITY_DESC);
+        if (savedInstanceState != null) {
+            mMovies = (MovieModel[]) savedInstanceState.getSerializable("moviesArrObj");
+            mRecyclerView.setAdapter(new MoviesAdapter(mMovies, new RecyclerViewClickListener() {
+                @Override
+                public void recyclerViewListClicked(View v, int position) {
+                    mCallbacks.onItemSelected(mMovies[position]);
+                }
+            }));
+        } else {
+            downloadMoviesData(SORT_ORDER_POPULARITY_DESC);
+        }
 
         return rootView;
     }
@@ -174,11 +185,15 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mActivatedPosition != ListView.INVALID_POSITION) {
-            // Serialize and persist the activated item position.
-            outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
-        }
+//        if (mActivatedPosition != ListView.INVALID_POSITION) {
+//            // Serialize and persist the activated item position.
+//            outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
+//        }
+
+        outState.putSerializable("moviesArrObj", mMovies);
+
     }
+
 
     /**
      * A callback interface that all activities containing this fragment must

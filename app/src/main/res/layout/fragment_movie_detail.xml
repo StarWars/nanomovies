@@ -12,7 +12,7 @@
 
         <ImageView
             android:id="@+id/movie_poster_img_view"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
@@ -26,9 +26,13 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:layout_alignRight="@+id/movie_poster_img_view"
+            android:layout_weight="1"
+            android:ellipsize="none"
+            android:maxLines="100"
+            android:scrollHorizontally="false"
             android:text="Movie Title"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="40dp" />
+            android:textSize="32dp" />
 
         <TextView
             android:id="@+id/movie_year_txt_view"

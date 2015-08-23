@@ -90,8 +90,6 @@ public class MovieListFragment extends Fragment {
         } else if (id == R.id.action_refresh) {
             downloadMoviesData(SORT_ORDER_POPULARITY_DESC);
         }
-
-        mAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(item);
     }
 
@@ -125,6 +123,8 @@ public class MovieListFragment extends Fragment {
                 }
 
                 mRecyclerView.setAdapter(mAdapter);
+
+                mAdapter.notifyDataSetChanged();
 
                 Log.d(LOG_TAG, "Will display " + moviesArr.length + " movies");
             }

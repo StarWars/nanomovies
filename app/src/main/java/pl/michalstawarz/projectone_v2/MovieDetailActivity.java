@@ -41,6 +41,7 @@ public class MovieDetailActivity extends AppCompatActivity {
             Bundle arguments = new Bundle();
             arguments.putSerializable(MovieDetailFragment.ARG_ITEM_ID,
                     getIntent().getSerializableExtra(MovieDetailFragment.ARG_ITEM_ID));
+
             MovieDetailFragment fragment = new MovieDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

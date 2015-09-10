@@ -19,6 +19,9 @@ import java.net.URL;
  * Created by Michal Stawarz on 2015-08-11.
  */
 public class FetchMoviesTask extends AsyncTask<Void, Void, MovieModel[]> {
+
+    public static String MOVIE_DB_API_KEY = "YOUR API HERE";
+
     private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
     FetchMoviesListener listener;
     String mAPI_KEY;
@@ -130,6 +133,7 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, MovieModel[]> {
         final String MD_MOVIE_TITLE = "title";
         final String MD_VOTE_AVERAGE = "vote_average";
         final String MD_PLOT_SYNOPSIS = "overview";
+        final String MD_MOVIE_ID    = "id";
 
         JSONObject moviesJson = new JSONObject(moviesJsonStr);
         JSONArray moviesArray = moviesJson.getJSONArray("results");
@@ -145,6 +149,7 @@ public class FetchMoviesTask extends AsyncTask<Void, Void, MovieModel[]> {
             movieModel.title = movieEntry.getString(MD_MOVIE_TITLE);
             movieModel.vote_average = movieEntry.getDouble(MD_VOTE_AVERAGE);
             movieModel.plot_overview = movieEntry.getString(MD_PLOT_SYNOPSIS);
+            movieModel.movie_id = movieEntry.getString(MD_MOVIE_ID);
 
             movies[i] = movieModel;
         }

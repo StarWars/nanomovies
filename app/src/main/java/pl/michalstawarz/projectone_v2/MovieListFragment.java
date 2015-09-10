@@ -46,7 +46,7 @@ public class MovieListFragment extends Fragment {
         }
     };
     private final String LOG_TAG = MovieListFragment.class.getSimpleName();
-    String MOVIE_DB_API_KEY = "PASTE YOUR API KEY HERE";
+
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     /**
@@ -129,7 +129,7 @@ public class MovieListFragment extends Fragment {
                 Log.d(LOG_TAG, "Will display " + moviesArr.length + " movies");
             }
 
-        }, MOVIE_DB_API_KEY, sortOrder).execute(null, null, null);
+        }, FetchMoviesTask.MOVIE_DB_API_KEY, sortOrder).execute(null, null, null);
     }
 
     @Override

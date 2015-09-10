@@ -13,16 +13,18 @@ public class MovieModel implements Serializable {
     String title;
     double vote_average;
     String plot_overview;
+    String movie_id;
 
     public MovieModel() {
     }
 
-    public MovieModel(String poster_path, String release_date, String title, double vote_average, String plot_overview) {
+    public MovieModel(String poster_path, String release_date, String title, double vote_average, String plot_overview, String movie_id) {
         this.poster_path = poster_path;
         this.release_date = release_date;
         this.title = title;
         this.vote_average = vote_average;
         this.plot_overview = plot_overview;
+        this.movie_id = movie_id;
     }
 
     public String getPoster_path() {
@@ -64,5 +66,14 @@ public class MovieModel implements Serializable {
     public void setPlot_overview(String plot_overview) {
         this.plot_overview = plot_overview;
     }
+
+    public String getMovie_id() {
+        return movie_id;
+    }
+
+    public void setMovie_id(String movie_id) {
+        this.movie_id = movie_id;
+    }
+
 }
 

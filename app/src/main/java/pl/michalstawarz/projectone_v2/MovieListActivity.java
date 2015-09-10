@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
+import pl.michalstawarz.projectone_v2.Helpers.FetchMoviesTask;
 import pl.michalstawarz.projectone_v2.Helpers.MovieModel;
 
 /**

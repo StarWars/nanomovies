@@ -18,12 +18,14 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import pl.michalstawarz.projectone_v2.Helpers.FetchMoviesTask;
 import pl.michalstawarz.projectone_v2.Helpers.MovieModel;
+import pl.michalstawarz.projectone_v2.Helpers.TrailersAdapter;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -63,7 +65,7 @@ public class MovieDetailFragment extends Fragment {
     /**
      *  JSON mapping objects
      */
-    private static class Trailer {
+    public static class Trailer {
         public final String id;
         public final String iso_639_1;
         public final String key;
@@ -141,7 +143,8 @@ public class MovieDetailFragment extends Fragment {
                 Log.d("RetroFit", "Downloaded # of trailers: " + downloadedTrailerWrapper.results.toArray().length);
 
                 ListView listView = (ListView) rootView.findViewById(R.id.movie_trailers_listView);
-                final ArrayAdapter<Trailer> aAdapter = new ArrayAdapter<Trailer>(getActivity(), R.layout.simple_list_item_2, R.id.text1, downloadedTrailerWrapper.results);
+                TrailersAdapter aAdapter = new TrailersAdapter(getActivity(), (ArrayList<Trailer>)downloadedTrailerWrapper.results);
+
                 listView.setAdapter(aAdapter);
 
                 int totalHeight = 0;

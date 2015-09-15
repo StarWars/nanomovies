@@ -10,14 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.Map;
 
 import pl.michalstawarz.projectone_v2.Helpers.FetchMoviesTask;
 import pl.michalstawarz.projectone_v2.Helpers.MovieModel;
-import pl.michalstawarz.projectone_v2.Helpers.TrailersAdapter;
+import pl.michalstawarz.projectone_v2.Helpers.MovieDetailsAdapter;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -45,6 +44,7 @@ import retrofit.http.QueryMap;
 
 public class MovieDetailFragment extends Fragment {
     private TrailersWrapper downloadedTrailerWrapper;
+    private ReviewsWrapper downloadedReviewsWrapper;
 
     /**
      * The fragment argument representing the item ID that this fragment
@@ -59,6 +59,23 @@ public class MovieDetailFragment extends Fragment {
             this.id = id;
             this.results = results;
 
+        }
+    }
+
+    private class ReviewsWrapper {
+
+        public final int id;
+        public final int page;
+        public final int total_pages;
+        public final int total_results;
+        public final List<Review> results;
+
+        public ReviewsWrapper(int id, int page, List<Review> results, int total_pages, int total_results) {
+            this.id = id;
+            this.page = page;
+            this.results = results;
+            this.total_pages = total_pages;
+            this.total_results = total_results;
         }
     }
 
@@ -86,16 +103,37 @@ public class MovieDetailFragment extends Fragment {
 
     }
 
+    public class Review {
+
+        public final String id;
+        public final String author;
+        public final String content;
+        public final String url;
+
+        public Review(String id, String author, String content, String url) {
+            this.id = id;
+            this.author = author;
+            this.content = content;
+            this.url = url;
+        }
+    }
+
     public interface MovieDBTrailerService {
         @GET("movie/{movie_id}/videos")
         Call<TrailersWrapper> listTrailers(@Path("movie_id") String movie_id, @QueryMap Map<String, String> options);
     }
 
+    public interface MovieDBReviewsService {
+        @GET("movie/{movie_id}/reviews")
+        Call<ReviewsWrapper> listReviews(@Path("movie_id") String movie_id, @QueryMap Map<String, String> options);
+    }
+
     /**
      *  Class fields
      */
-    public static final String ARG_ITEM_ID  = "item_id";
-    final String QUERY_API_KEY_PARAM        = "api_key";
+    public static final String ARG_ITEM_ID      = "item_id";
+    final String QUERY_API_KEY_PARAM            = "api_key";
+    final String QUERY_REVIEW_PAGE_PARAM        = "page";
 
     /**
      * The movie content this fragment is presenting.
@@ -143,23 +181,9 @@ public class MovieDetailFragment extends Fragment {
                 Log.d("RetroFit", "Downloaded # of trailers: " + downloadedTrailerWrapper.results.toArray().length);
 
                 ListView listView = (ListView) rootView.findViewById(R.id.movie_trailers_listView);
-                TrailersAdapter aAdapter = new TrailersAdapter(getActivity(), (ArrayList<Trailer>)downloadedTrailerWrapper.results);
+                MovieDetailsAdapter aAdapter = new MovieDetailsAdapter(getActivity(), (ArrayList<Trailer>) downloadedTrailerWrapper.results);
 
                 listView.setAdapter(aAdapter);
-
-                int totalHeight = 0;
-                for (int i = 0; i < aAdapter.getCount(); i++) {
-                    View listItem = aAdapter.getView(i, null, listView);
-                    listItem.measure(0, 0);
-                    totalHeight += listItem.getMeasuredHeight();
-                }
-
-                ViewGroup.LayoutParams params = listView.getLayoutParams();
-                float dpValue = totalHeight + (listView.getDividerHeight() * (aAdapter.getCount() - 1));
-                float density = getActivity().getResources().getDisplayMetrics().density;
-                params.height = (int) Math.ceil(dpValue * density); //pixels value
-                listView.setLayoutParams(params);
-                listView.requestLayout();
 
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -190,9 +214,47 @@ public class MovieDetailFragment extends Fragment {
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
-                Log.e("RetroFitError", "ERROR");
+                Log.e("RetroFitError", "TRAILERS ERROR");
             }
         });
+    }
+
+    public void downloadReviews(final View rootView) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://api.themoviedb.org/3/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+
+        MovieDBReviewsService service = retrofit.create(MovieDBReviewsService.class);
+        Map <String, String> hm = new HashMap<>();
+        hm.put(QUERY_API_KEY_PARAM, FetchMoviesTask.MOVIE_DB_API_KEY);
+        hm.put(QUERY_REVIEW_PAGE_PARAM, "1");
+        Call<ReviewsWrapper> reviews = service.listReviews(movie.getMovie_id(), hm);
+
+        reviews.enqueue(new Callback<ReviewsWrapper>() {
+            @Override
+            public void onResponse(Response<ReviewsWrapper> response) {
+                downloadedReviewsWrapper = response.body();
+                Log.d("RetroFit", "Downloaded # of reviews: " + downloadedReviewsWrapper.results.toArray().length);
+
+                ListView listView = (ListView) rootView.findViewById(R.id.movie_reviews_listView);
+                MovieDetailsAdapter aAdapter = new MovieDetailsAdapter(getActivity(), (ArrayList<Review>) downloadedReviewsWrapper.results);
+
+                listView.setAdapter(aAdapter);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                try {
+                    throw t;
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+                Log.e("RetroFitError", "REVIEWS ERROR");
+            }
+        });
+
     }
 
     @Override
@@ -211,10 +273,12 @@ public class MovieDetailFragment extends Fragment {
             Picasso.with(rootView.getContext()).load("http://image.tmdb.org/t/p/w300/" + movie.getPoster_path()).into(((ImageView) rootView.findViewById(R.id.movie_poster_img_view)));
 
             downloadTrailers(rootView);
+            downloadReviews(rootView);
         }
 
         return rootView;
     }
+
     private boolean appInstalledOrNot(String uri) {
         PackageManager pm = getActivity().getPackageManager();
         boolean app_installed;
@@ -230,4 +294,5 @@ public class MovieDetailFragment extends Fragment {
     public void setMovieObject(MovieModel movie) {
         this.movie = movie;
     }
+
 }

@@ -4,7 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 /**
  * An activity representing a single Movie detail screen. This
@@ -65,7 +69,24 @@ public class MovieDetailActivity extends AppCompatActivity {
             NavUtils.navigateUpTo(this, new Intent(this, MovieListActivity.class));
 
             return true;
+        } else if (id == R.id.action_share) {
+            Log.e("MENU_BTN", "SHARE");
+            return true;
+
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.movie_details_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public void favMovie(View view) {
+
+
     }
 }

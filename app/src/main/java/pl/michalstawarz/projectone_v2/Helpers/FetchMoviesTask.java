@@ -20,7 +20,7 @@ import java.net.URL;
  */
 public class FetchMoviesTask extends AsyncTask<Void, Void, MovieModel[]> {
 
-    public static String MOVIE_DB_API_KEY = "YOUR API HERE";
+    public static String MOVIE_DB_API_KEY = "";
 
     private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
     FetchMoviesListener listener;

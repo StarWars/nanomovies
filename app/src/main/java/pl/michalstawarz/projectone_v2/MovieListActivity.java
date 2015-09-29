@@ -1,12 +1,21 @@
 package pl.michalstawarz.projectone_v2;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
+import pl.michalstawarz.projectone_v2.Database.MovieContract;
+import pl.michalstawarz.projectone_v2.Database.MovieDbHelper;
 import pl.michalstawarz.projectone_v2.Helpers.FetchMoviesTask;
 import pl.michalstawarz.projectone_v2.Helpers.MovieModel;
+import pl.michalstawarz.projectone_v2.Helpers.MoviesApp;
 
 /**
  * An activity representing a list of Movies. This activity
@@ -31,6 +40,8 @@ public class MovieListActivity extends ActionBarActivity implements MovieListFra
      * device.
      */
     private boolean mTwoPane;
+
+    private MovieModel selectedMovie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,15 +71,15 @@ public class MovieListActivity extends ActionBarActivity implements MovieListFra
     @Override
     public void onItemSelected(MovieModel selectedMovie) {
         Log.e("CAAT", "item selected " + selectedMovie.getTitle());
-
+        this.selectedMovie = selectedMovie;
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, selectedMovie.getTitle());
+//            Bundle arguments = new Bundle();
+//            arguments.putString(MovieDetailFragment.ARG_ITEM_ID, selectedMovie.getTitle());
             MovieDetailFragment fragment = new MovieDetailFragment();
-            fragment.setArguments(arguments);
+//            fragment.setArguments(arguments);
             fragment.setMovieObject(selectedMovie);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.movie_detail_container, fragment)

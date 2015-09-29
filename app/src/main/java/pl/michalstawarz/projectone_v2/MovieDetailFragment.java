@@ -1,7 +1,11 @@
 package pl.michalstawarz.projectone_v2;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -22,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import pl.michalstawarz.projectone_v2.Database.MovieContract;
+import pl.michalstawarz.projectone_v2.Database.MovieDbHelper;
 import pl.michalstawarz.projectone_v2.Helpers.FetchMoviesTask;
 import pl.michalstawarz.projectone_v2.Helpers.MovieModel;
 import pl.michalstawarz.projectone_v2.Helpers.MovieDetailsAdapter;
@@ -151,12 +158,12 @@ public class MovieDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            movie = (MovieModel) getArguments().get(ARG_ITEM_ID);
-            Log.e("Fragment", "movie model: " + movie);
+        if (getArguments() != null) {
+            if (getArguments().containsKey(ARG_ITEM_ID)) {
+                movie = (MovieModel) getArguments().get(ARG_ITEM_ID);
+                ((MovieDetailActivity) getActivity()).setCurrentMovie(movie);
+                Log.e("Fragment", "movie model: " + movie);
+            }
         }
     }
 
@@ -274,9 +281,78 @@ public class MovieDetailFragment extends Fragment {
 
             downloadTrailers(rootView);
             downloadReviews(rootView);
+
+            configureFavButton(rootView.findViewById(R.id.favourite_button));
+
+            rootView.findViewById(R.id.favourite_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    favMovie(view);
+                }
+            });
         }
 
         return rootView;
+    }
+    private void configureFavButton(View view) {
+
+        Button buttonPressed = (Button) view;
+
+        MovieDbHelper dbHelper = new MovieDbHelper(buttonPressed.getContext());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        Cursor c = db.query(MovieContract.MovieEntry.TABLE_NAME, null, MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movie.getMovie_id(), null, null, null, null, null);
+
+        Button favBtn = (Button) view;
+        if(c.getCount() > 0) {
+            favBtn.setText("LIKE");
+            favBtn.getBackground().setColorFilter(0xe0f47521, PorterDuff.Mode.SRC_ATOP);
+            favBtn.invalidate();
+        } else {
+            favBtn.setText("LIKE");
+            favBtn.getBackground().clearColorFilter();
+            favBtn.invalidate();
+        }
+
+        c.close();
+    }
+
+    public void favMovie(View view){
+        Button buttonPressed = (Button) view;
+
+        MovieDbHelper dbHelper = new MovieDbHelper(view.getContext());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues movieValues = new ContentValues();
+        movieValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movie.getMovie_id());
+        movieValues.put(MovieContract.MovieEntry.COLUMN_PLOT_OVERVIEW, movie.getPlot_overview());
+        movieValues.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, movie.getPoster_path());
+        movieValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movie.getRelease_date());
+        movieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getTitle());
+        movieValues.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.getVote_average());
+
+        long movieRowId;
+        Cursor c = db.query(MovieContract.MovieEntry.TABLE_NAME, null, MovieContract.MovieEntry.COLUMN_MOVIE_ID +"="+movie.getMovie_id(), null, null, null, null,null);
+        if(c.getCount() > 0){
+            movieRowId = db.delete(MovieContract.MovieEntry.TABLE_NAME, MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=?", new String[]{movie.getMovie_id()});
+            if (movieRowId != -1) {
+                Log.v("DB", "REMOVAL SUCCESS");
+            }
+            else {
+                Log.v("DB", "FAILURE");
+            }
+        } else {
+            movieRowId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, movieValues);
+            if (movieRowId != -1) {
+                Log.v("DB", "SUCCESS");
+            }
+            else {
+                Log.v("DB", "FAILURE");
+            }
+        }
+        configureFavButton(buttonPressed);
+        c.close();
+        db.close();
     }
 
     private boolean appInstalledOrNot(String uri) {

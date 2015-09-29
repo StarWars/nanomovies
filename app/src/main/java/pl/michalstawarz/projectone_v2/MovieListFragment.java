@@ -2,6 +2,9 @@ package pl.michalstawarz.projectone_v2;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Movie;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,9 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import pl.michalstawarz.projectone_v2.Database.MovieContract;
+import pl.michalstawarz.projectone_v2.Database.MovieDbHelper;
 import pl.michalstawarz.projectone_v2.Helpers.FetchMoviesTask;
 import pl.michalstawarz.projectone_v2.Helpers.MovieModel;
 import pl.michalstawarz.projectone_v2.Helpers.MoviesAdapter;
+import pl.michalstawarz.projectone_v2.Helpers.MoviesApp;
 
 /**
  * A list fragment representing a list of Movies. This fragment
@@ -87,7 +93,10 @@ public class MovieListFragment extends Fragment {
             downloadMoviesData(SORT_ORDER_POPULARITY_DESC);
         } else if (id == R.id.action_sort_by_highest_rated) {
             downloadMoviesData(SORT_ORDER_VOTE_DESC);
-        } else if (id == R.id.action_refresh) {
+        } else if (id == R.id.action_sort_by_favs){
+            retrieveFavMoviesData();
+        }
+        else if (id == R.id.action_refresh) {
             downloadMoviesData(SORT_ORDER_POPULARITY_DESC);
         }
         return super.onOptionsItemSelected(item);
@@ -104,6 +113,39 @@ public class MovieListFragment extends Fragment {
     public void onStart() {
         super.onStart();
     }
+
+    private void retrieveFavMoviesData() {
+
+        MovieDbHelper dbHelper = new MovieDbHelper(getActivity());
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor myCursor = db.query(MovieContract.MovieEntry.TABLE_NAME, null, null, null, null, null, null, null);
+
+        MovieModel array[] = new MovieModel[myCursor.getCount()];
+        int i = 0;
+        myCursor.moveToFirst();
+        while (!myCursor.isAfterLast()) {
+            MovieModel movieModel = new MovieModel();
+            movieModel.setMovie_id(myCursor.getString(myCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID)));
+            movieModel.setPlot_overview(myCursor.getString(myCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_PLOT_OVERVIEW)));
+            movieModel.setPoster_path(myCursor.getString(myCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)));
+            movieModel.setRelease_date(myCursor.getString(myCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
+            movieModel.setTitle(myCursor.getString(myCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+            movieModel.setVote_average(myCursor.getDouble(myCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE)));
+            array[i] = movieModel;
+            i++;
+            myCursor.moveToNext();
+        }
+        myCursor.close();
+        mMovies = array;
+        mRecyclerView.setAdapter(new MoviesAdapter(mMovies, new RecyclerViewClickListener() {
+            @Override
+            public void recyclerViewListClicked(View v, int position) {
+                mCallbacks.onItemSelected(mMovies[position]);
+            }
+        }));
+        mAdapter.notifyDataSetChanged();
+    }
+
 
     public void downloadMoviesData(String sortOrder) {
         new FetchMoviesTask(new FetchMoviesTask.FetchMoviesListener() {
